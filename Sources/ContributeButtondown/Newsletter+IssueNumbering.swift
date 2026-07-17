@@ -143,7 +143,8 @@ extension Newsletter {
   ) -> [NumberedEmail] {
     let fresh = emails.filter { email in
       if let explicit = parseIssueNumber(fromSubject: email.subject),
-        existingIssueNumbers.contains(explicit) {
+        existingIssueNumbers.contains(explicit)
+      {
         return false
       }
       return !existingSlugs.contains(slug(email))
