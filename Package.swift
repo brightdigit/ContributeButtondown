@@ -5,7 +5,9 @@ import PackageDescription
 
 let package = Package(
   name: "ContributeButtondown",
-  platforms: [.macOS(.v13)],
+  // Matches the root package floor (raised to .v15 for issue #44); the vendored
+  // Publish stack also requires macOS 15 (Synchronization.Mutex).
+  platforms: [.macOS(.v15)],
   products: [
     .library(
       name: "ContributeButtondown",

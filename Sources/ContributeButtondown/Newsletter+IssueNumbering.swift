@@ -113,20 +113,41 @@ extension Newsletter {
     return result
   }
 
-  /// Numbers the emails, then keeps only those whose issue number is not already
-  /// present locally — the new issues to import (118+ for the current archive).
+  /// Filters out the emails already present locally, then numbers the rest —
+  /// the new issues to import (118+ for the current archive).
+  ///
+  /// Filtering happens **before** numbering, which is what makes repeated
+  /// imports idempotent. An unnumbered sent email is assigned the next
+  /// sequential number, and that number is derived from `localMaxIssueNo`, which
+  /// grows as issues are written. Numbering first and filtering by number (the
+  /// old behavior) therefore re-imported the same email under a fresh number on
+  /// every run. Instead an email is treated as already present when either its
+  /// explicit subject number is in `existingIssueNumbers`, or its `slug` — which
+  /// is derived from the stable subject and encoded in the `NNN-slug` file name —
+  /// is in `existingSlugs`. Remaining emails are numbered from `localMaxIssueNo`,
+  /// so their numbers stay contiguous.
   ///
   /// - Parameters:
-  ///   - emails: The Buttondown emails to number.
+  ///   - emails: The Buttondown emails to consider (typically the `.sent` ones).
   ///   - localMaxIssueNo: The highest issue number already present locally.
-  ///   - existingIssueNumbers: Issue numbers already on disk, to skip.
-  /// - Returns: The numbered emails not already present, in oldest-first order.
+  ///   - existingIssueNumbers: Explicit issue numbers already on disk, to skip.
+  ///   - existingSlugs: Slugs already on disk (from `NNN-slug.md` names), to skip.
+  ///   - slug: Derives an email's slug the same way the writer names its file.
+  /// - Returns: The numbered new issues, in oldest-first order.
   public static func newIssues(
     from emails: [Email],
     continuingFrom localMaxIssueNo: Int,
-    existingIssueNumbers: Set<Int>
+    existingIssueNumbers: Set<Int>,
+    existingSlugs: Set<String>,
+    slug: (Email) -> String
   ) -> [NumberedEmail] {
-    assignIssueNumbers(to: emails, continuingFrom: localMaxIssueNo)
-      .filter { !existingIssueNumbers.contains($0.issueNo) }
+    let fresh = emails.filter { email in
+      if let explicit = parseIssueNumber(fromSubject: email.subject),
+        existingIssueNumbers.contains(explicit) {
+        return false
+      }
+      return !existingSlugs.contains(slug(email))
+    }
+    return assignIssueNumbers(to: fresh, continuingFrom: localMaxIssueNo)
   }
 }

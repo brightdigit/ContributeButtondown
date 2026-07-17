@@ -85,8 +85,8 @@ import Testing
     #expect(numbered.map(\.issueNo) == [125, 126])
   }
 
-  /// `newIssues` drops issue numbers already present locally, keeping only the
-  /// genuinely new ones.
+  /// `newIssues` drops explicitly-numbered issues already present locally,
+  /// keeping only the genuinely new ones.
   @Test internal func newIssuesSkipsExisting() {
     let emails = [
       Fixtures.email(subject: "Issue #117", daysAfterEpoch: 1),
@@ -96,9 +96,55 @@ import Testing
     let result = Newsletter.newIssues(
       from: emails,
       continuingFrom: 117,
-      existingIssueNumbers: [117]
+      existingIssueNumbers: [117],
+      existingSlugs: [],
+      slug: \.subject
     )
     #expect(result.map(\.issueNo) == [118, 119])
+  }
+
+  /// Re-importing the same unnumbered sent emails is idempotent: because their
+  /// slugs are already on disk they are skipped, even though the growing local
+  /// max would otherwise assign them fresh numbers on the second run.
+  ///
+  /// Regression test for the duplicate-file bug where filtering happened by
+  /// number *after* numbering.
+  @Test internal func reimportOfUnnumberedEmailsIsIdempotent() {
+    let emails = [
+      Fixtures.email(subject: "Launch day", daysAfterEpoch: 1),
+      Fixtures.email(subject: "Follow up", daysAfterEpoch: 2),
+    ]
+    // First run: nothing on disk, archive ends at 117.
+    let firstRun = Newsletter.newIssues(
+      from: emails,
+      continuingFrom: 117,
+      existingIssueNumbers: [117],
+      existingSlugs: [],
+      slug: \.subject
+    )
+    #expect(firstRun.map(\.issueNo) == [118, 119])
+
+    // Second run: the two files now exist (slugs on disk, local max advanced).
+    let writtenSlugs = Set(emails.map(\.subject))
+    let secondRun = Newsletter.newIssues(
+      from: emails,
+      continuingFrom: 119,
+      existingIssueNumbers: [117],
+      existingSlugs: writtenSlugs,
+      slug: \.subject
+    )
+    #expect(secondRun.isEmpty)
+
+    // A genuinely new email continues contiguously from the local max.
+    let thirdRun = Newsletter.newIssues(
+      from: emails + [Fixtures.email(subject: "Brand new", daysAfterEpoch: 3)],
+      continuingFrom: 119,
+      existingIssueNumbers: [117],
+      existingSlugs: writtenSlugs,
+      slug: \.subject
+    )
+    #expect(thirdRun.map(\.issueNo) == [120])
+    #expect(thirdRun.map(\.email.subject) == ["Brand new"])
   }
 
   /// With no explicit numbers at all, the whole batch is numbered sequentially
