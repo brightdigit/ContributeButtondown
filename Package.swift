@@ -15,8 +15,8 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(path: "../../BrightDigit/Contribute"),
-    .package(path: "../../BrightDigit/ButtondownKit")
+    .package(name: "Contribute", path: "../../BrightDigit/Contribute"),
+    .package(name: "ButtondownKit", path: "../../BrightDigit/ButtondownKit")
   ],
   targets: [
     .target(
