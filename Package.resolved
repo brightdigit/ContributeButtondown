@@ -1,6 +1,24 @@
 {
-  "originHash" : "8415e642de3997bc54fdb0bf77af9c247f05cab401f5335df6e1c5f74df270a3",
+  "originHash" : "6eac78edbcfe0ffb1be8f49a00467231a96e21d71779af78b26fa09b3947d0d5",
   "pins" : [
+    {
+      "identity" : "buttondownkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/brightdigit/ButtondownKit.git",
+      "state" : {
+        "branch" : "brightdigit-com-260621",
+        "revision" : "d2f7930b8aa9687f7887877bd43ce58cc070e5a3"
+      }
+    },
+    {
+      "identity" : "contribute",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/brightdigit/Contribute.git",
+      "state" : {
+        "branch" : "brightdigit-com-260621",
+        "revision" : "b674f44579bfcc55c389676ec6bd5af584d3dcbb"
+      }
+    },
     {
       "identity" : "swift-cmark",
       "kind" : "remoteSourceControl",

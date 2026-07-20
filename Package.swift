@@ -20,8 +20,14 @@ let package = Package(
     )
   ],
   dependencies: [
-    .package(name: "Contribute", path: "../../BrightDigit/Contribute"),
-    .package(name: "ButtondownKit", path: "../../BrightDigit/ButtondownKit")
+    .package(
+      url: "https://github.com/brightdigit/Contribute.git",
+      branch: "brightdigit-com-260621"
+    ),
+    .package(
+      url: "https://github.com/brightdigit/ButtondownKit.git",
+      branch: "brightdigit-com-260621"
+    )
   ],
   targets: [
     .target(
