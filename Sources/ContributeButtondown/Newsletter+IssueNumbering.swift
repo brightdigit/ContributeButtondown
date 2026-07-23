@@ -1,6 +1,6 @@
 //
 //  Newsletter+IssueNumbering.swift
-//  BrightDigit
+//  ContributeButtondown
 //
 //  Created by Leo Dion.
 //  Copyright © 2026 BrightDigit.

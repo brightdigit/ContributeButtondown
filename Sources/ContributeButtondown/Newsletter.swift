@@ -1,6 +1,6 @@
 //
 //  Newsletter.swift
-//  BrightDigit
+//  ContributeButtondown
 //
 //  Created by Leo Dion.
 //  Copyright © 2026 BrightDigit.
@@ -36,7 +36,10 @@ import Contribute
 /// Buttondown's plaintext editor returns Markdown directly, so the email body is
 /// copied into the generated content without an HTML conversion step.
 public enum Newsletter: ContentType {
+  /// The resolved newsletter issue this content type imports.
   public typealias SourceType = Source
+  /// The extractor that produces the Markdown body for an issue.
   public typealias MarkdownExtractorType = MarkdownExtractor
+  /// The translator that produces the YAML front matter for an issue.
   public typealias FrontMatterTranslatorType = FrontMatterTranslator
 }

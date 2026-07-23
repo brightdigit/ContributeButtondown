@@ -1,6 +1,6 @@
 //
 //  FrontMatterTranslator.swift
-//  BrightDigit
+//  ContributeButtondown
 //
 //  Created by Leo Dion.
 //  Copyright © 2026 BrightDigit.
@@ -36,11 +36,18 @@ import Contribute
 extension Newsletter {
   /// Translates a Buttondown newsletter ``Source`` into its ``FrontMatter``.
   public struct FrontMatterTranslator: Contribute.FrontMatterTranslator {
+    /// The front matter emitted for a newsletter issue.
     public typealias FrontMatterType = FrontMatter
+    /// The resolved newsletter issue being translated.
     public typealias SourceType = Source
 
+    /// Creates a translator.
     public init() {}
 
+    /// Maps a resolved issue onto the site's front matter.
+    ///
+    /// - Parameter source: The resolved newsletter issue.
+    /// - Returns: The front matter written above the issue body.
     public func frontMatter(from source: Source) -> FrontMatter {
       FrontMatter(
         issueNo: source.issueNo,

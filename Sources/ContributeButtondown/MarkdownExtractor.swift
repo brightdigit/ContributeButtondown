@@ -1,6 +1,6 @@
 //
 //  MarkdownExtractor.swift
-//  BrightDigit
+//  ContributeButtondown
 //
 //  Created by Leo Dion.
 //  Copyright © 2026 BrightDigit.
@@ -32,16 +32,31 @@ import Contribute
 extension Newsletter {
   /// Copies a Buttondown plaintext-editor body directly into site content.
   public struct MarkdownExtractor: Contribute.MarkdownExtractor {
+    /// The resolved newsletter issue whose body is copied through.
     public typealias SourceType = Source
 
     private static let editorModeMarker =
       "<!-- buttondown-editor-mode: plaintext -->"
 
+    /// Creates an extractor.
     public init() {}
 
+    /// Returns the issue's Markdown body.
+    ///
+    /// Buttondown's plaintext editor already stores Markdown, so the body is
+    /// copied verbatim and the HTML-to-Markdown conversion is unused. The
+    /// leading `<!-- buttondown-editor-mode: plaintext -->` marker, and the
+    /// newlines that follow it, are stripped.
+    ///
+    /// - Parameters:
+    ///   - source: The resolved newsletter issue.
+    ///   - htmlToMarkdown: The HTML-to-Markdown conversion supplied by the
+    ///     pipeline. Unused here, because the body is already Markdown.
+    /// - Returns: The issue body as Markdown.
+    /// - Throws: Never; the body is copied without conversion.
     public func markdown(
       from source: Source,
-      using _: @escaping (String) throws -> String
+      using htmlToMarkdown: @escaping (String) throws -> String
     ) throws -> String {
       guard source.markdown.hasPrefix(Self.editorModeMarker) else {
         return source.markdown
