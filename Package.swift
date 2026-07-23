@@ -22,11 +22,11 @@ let package = Package(
   dependencies: [
     .package(
       url: "https://github.com/brightdigit/Contribute.git",
-      branch: "v1.0.0"
+      branch: "main"
     ),
     .package(
       url: "https://github.com/brightdigit/ButtondownKit.git",
-      branch: "v1.0.0"
+      branch: "main"
     )
   ],
   targets: [
