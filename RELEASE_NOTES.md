@@ -1,0 +1,44 @@
+# Release Notes
+
+## Unreleased
+
+Wave 1 merge (brightdigit/ContributeButtondown #1, head `brightdigit-com-260717`) — the
+initial content of this package, split out of the brightdigit.com monorepo via
+`git subrepo push` and tied to `main` with an unrelated-histories merge so the diff is
+reviewable.
+
+### Library
+
+- Initial `ContributeButtondown` library: `Newsletter`, a `Contribute.ContentType` that
+  imports Buttondown newsletter emails into Markdown with YAML front matter.
+- `Newsletter.Source` resolves a `ButtondownKit.Email` into an importable issue (slug,
+  issue number, archive URL, featured image, title, description, date, Markdown body),
+  falling back to a supplied image URL when the email has none and throwing
+  `ButtondownImportError.malformedArchiveURL` when `absoluteURL` cannot be parsed.
+- `Newsletter.FrontMatter` and `Newsletter.FrontMatterTranslator` emit the front-matter
+  field set brightdigit.com's newsletter section reads, retaining `buttondownID` for
+  provenance.
+- `Newsletter.MarkdownExtractor` copies Buttondown's plaintext-editor body through
+  verbatim, stripping the `<!-- buttondown-editor-mode: plaintext -->` marker.
+- `Newsletter+IssueNumbering` parses explicit `Issue N` / `Issue #N` subjects, assigns
+  sequential numbers oldest-first, and filters already-imported issues before numbering
+  so repeated imports are idempotent.
+
+### Tests
+
+- swift-testing suites `IssueNumberingTests` and `NewsletterTranslationTests`, plus
+  offline `Fixtures` that build `ButtondownKit.Email` values with deterministic dates.
+
+### CI
+
+- Adopted the shared BrightDigit workflow template as
+  `.github/workflows/ContributeButtondown.yml` (Ubuntu, macOS, Apple platforms, Windows,
+  Android) alongside the five auxiliary workflows and the `setup-tools` composite action.
+- Package dependencies (`Contribute`, `ButtondownKit`) resolve from their GitHub
+  repositories rather than monorepo paths, so the package builds standalone.
+- Ubuntu coverage now uses `sersoft-gmbh/swift-coverage-action@v5`; matrix legs run with
+  `fail-fast: true`; the visionOS simulator leg was added and the `ENABLE_WATCHOS` gate
+  removed.
+- Repository hygiene: `codecov.yml`, `.github/dependabot.yml`, shared `.swift-format` /
+  `.swiftlint.yml`, `AGENTS.md` (with `CLAUDE.md` as a symlink), `.claude/` agent notes
+  and skills, a DocC catalog, and a rewritten README.
