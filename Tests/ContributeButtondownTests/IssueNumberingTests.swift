@@ -55,6 +55,48 @@ import Testing
     #expect(Newsletter.parseIssueNumber(fromSubject: "") == nil)
   }
 
+  /// A custom pattern recognizes a different subject convention, and stops
+  /// recognizing the default one.
+  @Test internal func customSubjectPatternParsesItsOwnMarker() throws {
+    let weekly = try IssueNumbering(subjectPattern: #"(?i)weekly\s*#?\s*(\d+)"#)
+
+    #expect(
+      Newsletter.parseIssueNumber(
+        fromSubject: "Weekly #42 — what shipped",
+        numbering: weekly
+      ) == 42
+    )
+    #expect(
+      Newsletter.parseIssueNumber(fromSubject: "Issue 118", numbering: weekly) == nil
+    )
+  }
+
+  /// A custom pattern flows through the numbering entry points, so an email its
+  /// marker matches keeps that explicit number.
+  @Test internal func customPatternFlowsThroughAssignIssueNumbers() throws {
+    let weekly = try IssueNumbering(subjectPattern: #"(?i)weekly\s*#?\s*(\d+)"#)
+    let emails = [
+      Fixtures.email(subject: "Weekly #42", daysAfterEpoch: 1),
+      Fixtures.email(subject: "No marker here", daysAfterEpoch: 2),
+    ]
+
+    let numbered = Newsletter.assignIssueNumbers(
+      to: emails,
+      continuingFrom: 0,
+      numbering: weekly
+    )
+
+    #expect(numbered.map(\.issueNo) == [42, 43])
+  }
+
+  /// An invalid pattern throws rather than trapping, so a bad consumer-supplied
+  /// pattern cannot crash the import.
+  @Test internal func invalidSubjectPatternThrows() {
+    #expect(throws: (any Error).self) {
+      _ = try IssueNumbering(subjectPattern: "(unclosed")
+    }
+  }
+
   /// Explicit subject numbers win; unnumbered emails take the next sequential
   /// number continuing from the local max — assigned oldest-first regardless of
   /// input order.

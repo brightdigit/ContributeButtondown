@@ -24,11 +24,19 @@ pieces together:
 ### Issue numbering
 
 Newsletter archives are numbered, but not every Buttondown subject carries its number.
-``Newsletter/parseIssueNumber(fromSubject:)`` recognizes the `Issue N` and `Issue #N` forms,
-``Newsletter/assignIssueNumbers(to:continuingFrom:)`` sorts emails oldest-first and fills in
-sequential numbers for the rest, and ``Newsletter/newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:)``
+``Newsletter/parseIssueNumber(fromSubject:numbering:)`` recognizes the marker described by
+``IssueNumbering``, ``Newsletter/assignIssueNumbers(to:continuingFrom:numbering:)`` sorts emails
+oldest-first and fills in sequential numbers for the rest, and
+``Newsletter/newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:numbering:)``
 drops the issues already on disk *before* numbering, which is what keeps repeated imports
 idempotent.
+
+``IssueNumbering/default`` recognizes the common `Issue N` / `Issue #N` form. Supply your own
+pattern when your subjects number issues differently:
+
+```swift
+let numbering = try IssueNumbering(subjectPattern: #"(?i)weekly\s*#?\s*(\d+)"#)
+```
 
 ### Writing files
 
@@ -79,10 +87,11 @@ try Newsletter.write(
 
 ### Issue numbering
 
+- ``IssueNumbering``
 - ``Newsletter/NumberedEmail``
-- ``Newsletter/parseIssueNumber(fromSubject:)``
-- ``Newsletter/assignIssueNumbers(to:continuingFrom:)``
-- ``Newsletter/newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:)``
+- ``Newsletter/parseIssueNumber(fromSubject:numbering:)``
+- ``Newsletter/assignIssueNumbers(to:continuingFrom:numbering:)``
+- ``Newsletter/newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:numbering:)``
 
 ### Errors
 

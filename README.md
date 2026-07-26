@@ -32,10 +32,11 @@ Two things make it more than a field mapping:
   the body is copied through verbatim rather than converted out of HTML. The only cleanup is
   stripping the leading `<!-- buttondown-editor-mode: plaintext -->` marker Buttondown prepends.
 - **Issue numbering that survives repeated imports.** Newsletter archives are numbered; Buttondown
-  subjects are not reliably. This package parses `Issue N` / `Issue #N` out of subjects where
-  present, assigns sequential numbers oldest-first where absent, and *filters already-imported
-  issues before numbering* — so running the import again is idempotent instead of re-importing the
-  same email under a fresh number.
+  subjects are not reliably. This package parses an issue number out of subjects where present,
+  assigns sequential numbers oldest-first where absent, and *filters already-imported issues before
+  numbering* — so running the import again is idempotent instead of re-importing the same email
+  under a fresh number. The subject marker is configurable: `IssueNumbering.default` recognizes the
+  common `Issue N` / `Issue #N` form, and `IssueNumbering(subjectPattern:)` takes your own.
 
 `brightdigit.com` uses it to import the BrightDigit newsletter archive, continuing the numbering
 from the Mailchimp-era issues it replaced.
@@ -71,7 +72,7 @@ translator, and a markdown extractor.
 ### 1. Pick the issues to import
 
 Hand your sent emails, plus what you already have on disk, to
-`newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:)`:
+`newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:numbering:)`:
 
 ```swift
 import ButtondownKit
@@ -90,6 +91,27 @@ let numbered = Newsletter.newIssues(
 
 Each result is a `Newsletter.NumberedEmail` — the email plus the issue number assigned to it, in
 oldest-first order.
+
+The `numbering:` parameter describes how an explicit issue number is recognized in a subject. It
+defaults to `IssueNumbering.default`, which matches the common `Issue N` / `Issue #N` form. If your
+subjects number issues differently, pass your own pattern — its first capture group is read as the
+number:
+
+```swift
+// Subjects like "Weekly #42 — what shipped"
+let numbering = try IssueNumbering(subjectPattern: #"(?i)weekly\s*#?\s*(\d+)"#)
+
+let numbered = Newsletter.newIssues(
+  from: sentEmails,
+  continuingFrom: localMax,
+  existingIssueNumbers: existingNumbers,
+  existingSlugs: existingSlugs,
+  slug: slug,
+  numbering: numbering
+)
+```
+
+A subject with no match carries no explicit number and falls back to sequential numbering.
 
 ### 2. Resolve each one into a source
 

@@ -42,7 +42,7 @@ extension Newsletter {
   public struct Source: Sendable {
     /// The URL-safe slug used for the file name (`NNN-slug.md`).
     public let slug: String
-    /// The assigned issue number (see ``IssueNumbering``).
+    /// The assigned issue number (see ``ContributeButtondown/IssueNumbering``).
     public let issueNo: Int
     /// The Buttondown email id (a TypeID).
     public let buttondownID: String

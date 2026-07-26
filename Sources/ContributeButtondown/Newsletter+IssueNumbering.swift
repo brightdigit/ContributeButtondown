@@ -36,7 +36,7 @@ extension Newsletter {
     /// The source Buttondown email.
     public let email: Email
     /// The issue number assigned by
-    /// ``Newsletter/assignIssueNumbers(to:continuingFrom:)``.
+    /// ``Newsletter/assignIssueNumbers(to:continuingFrom:numbering:)``.
     public let issueNo: Int
 
     /// Memberwise initializer.
@@ -46,63 +46,48 @@ extension Newsletter {
     }
   }
 
-  // Captures the issue number that follows the word "Issue" (case-insensitive),
-  // with an optional `#`: matches "Issue 118", "Issue #118", and the
-  // "… - Issue #118 - …" form the BrightDigit newsletter subjects use. Numbers
-  // that don't follow "Issue" (e.g. a version like "Bushel v2.3.0") are
-  // deliberately ignored, so those emails fall back to sequential numbering.
-  private static let issueNoRegexPatternString = #"(?i)issue\s*#?\s*(\d+)"#
-
-  private static let issueNoRegex: NSRegularExpression = {
-    do {
-      return try NSRegularExpression(pattern: issueNoRegexPatternString, options: [])
-    } catch {
-      preconditionFailure("Invalid issueNoRegex pattern: \(error)")
-    }
-  }()
-
   /// Parses an explicit issue number from an email subject, if present.
   ///
-  /// - Parameter subject: The email subject line.
-  /// - Returns: The number following "Issue" (optionally `#`), or `nil` when the
-  ///   subject carries no such marker.
-  public static func parseIssueNumber(fromSubject subject: String) -> Int? {
-    let range = NSRange(subject.startIndex..<subject.endIndex, in: subject)
-    guard
-      let match = issueNoRegex.firstMatch(in: subject, options: [], range: range),
-      match.numberOfRanges > 1,
-      let numberRange = Range(match.range(at: 1), in: subject),
-      let issueNumber = Int(subject[numberRange])
-    else {
-      return nil
-    }
-    return issueNumber
+  /// - Parameters:
+  ///   - subject: The email subject line.
+  ///   - numbering: How an issue number is recognized in a subject. Defaults to
+  ///     ``IssueNumbering/default``, the `Issue N` / `Issue #N` form.
+  /// - Returns: The captured number, or `nil` when the subject carries no
+  ///   recognizable marker.
+  public static func parseIssueNumber(
+    fromSubject subject: String,
+    numbering: IssueNumbering = .default
+  ) -> Int? {
+    numbering.issueNumber(fromSubject: subject)
   }
 
   /// Assigns an issue number to each email, oldest-first.
   ///
   /// Numbering needs global ordering, so this sorts the emails by
   /// `creationDate` ascending and walks them once. An email whose subject
-  /// carries an explicit "Issue N" marker keeps that number; an unnumbered email
-  /// takes the next sequential number, continuing from `localMaxIssueNo` and any
-  /// higher explicit number already seen. This continues the local archive
-  /// (which ends at issue 117) as 118, 119, … while honoring explicit numbers
-  /// when Buttondown provides them.
+  /// carries an explicit marker keeps that number; an unnumbered email takes the
+  /// next sequential number, continuing from `localMaxIssueNo` and any higher
+  /// explicit number already seen. An archive whose highest issue is N therefore
+  /// continues as N+1, N+2, … while explicit numbers are honored wherever the
+  /// subjects provide them.
   ///
   /// - Parameters:
   ///   - emails: The Buttondown emails to number (typically the `.sent` ones).
   ///   - localMaxIssueNo: The highest issue number already present locally.
+  ///   - numbering: How an issue number is recognized in a subject. Defaults to
+  ///     ``IssueNumbering/default``, the `Issue N` / `Issue #N` form.
   /// - Returns: One ``NumberedEmail`` per input email, in oldest-first order.
   public static func assignIssueNumbers(
     to emails: [Email],
-    continuingFrom localMaxIssueNo: Int
+    continuingFrom localMaxIssueNo: Int,
+    numbering: IssueNumbering = .default
   ) -> [NumberedEmail] {
     let ordered = emails.sorted { $0.creationDate < $1.creationDate }
     var maxAssigned = localMaxIssueNo
     var result: [NumberedEmail] = []
     for email in ordered {
       let issueNo: Int
-      if let explicit = parseIssueNumber(fromSubject: email.subject) {
+      if let explicit = numbering.issueNumber(fromSubject: email.subject) {
         issueNo = explicit
       } else {
         issueNo = maxAssigned + 1
@@ -114,7 +99,7 @@ extension Newsletter {
   }
 
   /// Filters out the emails already present locally, then numbers the rest —
-  /// the new issues to import (118+ for the current archive).
+  /// the new issues to import.
   ///
   /// Filtering happens **before** numbering, which is what makes repeated
   /// imports idempotent. An unnumbered sent email is assigned the next
@@ -133,22 +118,29 @@ extension Newsletter {
   ///   - existingIssueNumbers: Explicit issue numbers already on disk, to skip.
   ///   - existingSlugs: Slugs already on disk (from `NNN-slug.md` names), to skip.
   ///   - slug: Derives an email's slug the same way the writer names its file.
+  ///   - numbering: How an issue number is recognized in a subject. Defaults to
+  ///     ``IssueNumbering/default``, the `Issue N` / `Issue #N` form.
   /// - Returns: The numbered new issues, in oldest-first order.
   public static func newIssues(
     from emails: [Email],
     continuingFrom localMaxIssueNo: Int,
     existingIssueNumbers: Set<Int>,
     existingSlugs: Set<String>,
-    slug: (Email) -> String
+    slug: (Email) -> String,
+    numbering: IssueNumbering = .default
   ) -> [NumberedEmail] {
     let fresh = emails.filter { email in
-      if let explicit = parseIssueNumber(fromSubject: email.subject),
+      if let explicit = numbering.issueNumber(fromSubject: email.subject),
         existingIssueNumbers.contains(explicit)
       {
         return false
       }
       return !existingSlugs.contains(slug(email))
     }
-    return assignIssueNumbers(to: fresh, continuingFrom: localMaxIssueNo)
+    return assignIssueNumbers(
+      to: fresh,
+      continuingFrom: localMaxIssueNo,
+      numbering: numbering
+    )
   }
 }

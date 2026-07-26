@@ -20,9 +20,13 @@ reviewable.
   provenance.
 - `Newsletter.MarkdownExtractor` copies Buttondown's plaintext-editor body through
   verbatim, stripping the `<!-- buttondown-editor-mode: plaintext -->` marker.
-- `Newsletter+IssueNumbering` parses explicit `Issue N` / `Issue #N` subjects, assigns
+- `Newsletter+IssueNumbering` parses explicit issue numbers out of subjects, assigns
   sequential numbers oldest-first, and filters already-imported issues before numbering
   so repeated imports are idempotent.
+- `IssueNumbering` makes the subject marker configurable: `.default` recognizes the common
+  `Issue N` / `Issue #N` form, and `init(subjectPattern:)` accepts any pattern whose first
+  capture group holds the number, throwing on an invalid one. Every numbering entry point
+  takes it as a defaulted `numbering:` parameter.
 
 ### Tests
 

@@ -59,11 +59,16 @@ binds the trio of source model, front-matter translator, and markdown extractor:
   `Contribute`'s `YAML.dateFormatter`.
 - `Newsletter.MarkdownExtractor` — copies `source.markdown` through verbatim, stripping the
   leading `<!-- buttondown-editor-mode: plaintext -->` marker and the newlines after it.
-- `Newsletter+IssueNumbering.swift` — issue-number assignment. `parseIssueNumber(fromSubject:)`
-  pulls `Issue N` / `Issue #N` out of a subject; `assignIssueNumbers(to:continuingFrom:)` sorts
-  oldest-first and fills gaps sequentially; `newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:)`
+- `IssueNumbering.swift` — how an explicit issue number is recognized in a subject. Holds the
+  compiled regex; `IssueNumbering.default` is the `Issue N` / `Issue #N` form. `init(subjectPattern:)`
+  **throws** rather than trapping — the pattern is consumer input, so an invalid one must not crash
+  the import. Keep it that way.
+- `Newsletter+IssueNumbering.swift` — issue-number assignment. `parseIssueNumber(fromSubject:numbering:)`
+  pulls the number out of a subject; `assignIssueNumbers(to:continuingFrom:numbering:)` sorts
+  oldest-first and fills gaps sequentially; `newIssues(from:continuingFrom:existingIssueNumbers:existingSlugs:slug:numbering:)`
   filters already-imported emails **before** numbering, which is what makes repeated imports
-  idempotent. Do not reorder that filter-then-number sequence.
+  idempotent. Do not reorder that filter-then-number sequence. Every `numbering:` parameter is
+  defaulted, so adding one is source-compatible for callers.
 
 Code is `#if canImport(FoundationNetworking)`-guarded for non-Apple platforms — preserve those
 guards.
