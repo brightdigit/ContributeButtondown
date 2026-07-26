@@ -1,5 +1,3 @@
-![ContributeButtondown Logo](Sources/ContributeButtondown/ContributeButtondown.docc/Resources/ContributeButtondownLogo.png)
-
 # ContributeButtondown
 
 
