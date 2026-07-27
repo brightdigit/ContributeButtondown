@@ -165,6 +165,47 @@ The issue body, exactly as written in Buttondown.
 `buttondownID` is retained for provenance and reversibility; site generators that tolerate unknown
 metadata keys simply ignore it.
 
+### Using your own front matter
+
+That field set is what brightdigit.com's newsletter section reads — a sensible default, not a
+requirement. The front matter is any `Encodable`, so a site with a different schema supplies its own
+translator rather than reimplementing the importer:
+
+```swift
+struct MyFrontMatter: Encodable {
+  let headline: String
+  let publishedAt: String
+  let tags: [String]
+}
+
+struct MyTranslator: Contribute.FrontMatterTranslator {
+  let tags: [String]                       // per-site config lives here
+  init() { tags = [] }
+  init(tags: [String]) { self.tags = tags }
+
+  func frontMatter(from source: Newsletter.Source) -> MyFrontMatter {
+    MyFrontMatter(
+      headline: source.title,
+      publishedAt: YAML.dateFormatter.string(from: source.date),
+      tags: tags
+    )
+  }
+}
+
+try Newsletter.write(
+  from: sources,
+  atContentPathURL: URL(fileURLWithPath: "Content/newsletters"),
+  fileNameWithoutExtension: { "\($0.issueNo)-\($0.slug)" },
+  using: PassthroughMarkdownGenerator.shared.markdown(fromHTML:),
+  translatedBy: MyTranslator(tags: ["newsletter"])
+)
+```
+
+This overload takes a translator **instance**, so a translator can carry configuration — the
+`ContentType` path can't, since it default-constructs its translator. `Newsletter.FrontMatter` also
+has a public memberwise initializer, if you'd rather wrap or extend the default shape than replace
+it.
+
 ## Requirements
 
 - Swift 6.4 (`.swift-version` → `6.4.x-snapshot`)

@@ -36,12 +36,17 @@ import Foundation
 extension Newsletter {
   /// The YAML front matter emitted for a Buttondown newsletter issue.
   ///
-  /// The field set mirrors what `Sources/BrightDigitSite`'s `NewsletterItem`
-  /// reads: `issueNo`, `title`, `date`, `description`, `featuredImage`
-  /// (required by `ItemMetadata`), and `longArchiveURL` (the newsletter's
-  /// redirect target). ``buttondownID`` is retained for provenance/reversibility
-  /// and is ignored by the site (unknown metadata keys are tolerated), the same
-  /// way the Mailchimp importer retained `campaignID`.
+  /// This is a **reasonable default, not a fixed contract.** The field set is the
+  /// one brightdigit.com's newsletter section reads: `issueNo`, `title`, `date`,
+  /// `description`, `featuredImage`, and `longArchiveURL` (the newsletter's
+  /// redirect target). ``buttondownID`` is retained for provenance and is ignored
+  /// by consumers that don't know it — unknown YAML keys are tolerated.
+  ///
+  /// If your site needs a different shape, you are not stuck with this type. Any
+  /// `Encodable` will do: define your own front matter and a translator that
+  /// produces it, then write with
+  /// ``Newsletter/write(from:atContentPathURL:fileNameWithoutExtension:using:translatedBy:options:)``.
+  /// See ``Newsletter/FrontMatterTranslator`` for the default translator.
   public struct FrontMatter: Codable, Equatable, Sendable {
     /// The assigned issue number.
     public let issueNo: Int
@@ -57,5 +62,33 @@ extension Newsletter {
     public let date: String
     /// The issue description.
     public let description: String
+
+    /// Memberwise initializer.
+    ///
+    /// - Parameters:
+    ///   - issueNo: The assigned issue number.
+    ///   - buttondownID: The originating Buttondown email id.
+    ///   - featuredImage: The featured/preview image URL.
+    ///   - longArchiveURL: The canonical archive URL of the issue.
+    ///   - title: The issue title.
+    ///   - date: The published date, pre-formatted for YAML.
+    ///   - description: The issue description.
+    public init(
+      issueNo: Int,
+      buttondownID: String,
+      featuredImage: URL,
+      longArchiveURL: URL,
+      title: String,
+      date: String,
+      description: String
+    ) {
+      self.issueNo = issueNo
+      self.buttondownID = buttondownID
+      self.featuredImage = featuredImage
+      self.longArchiveURL = longArchiveURL
+      self.title = title
+      self.date = date
+      self.description = description
+    }
   }
 }

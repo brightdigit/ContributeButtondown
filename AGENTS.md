@@ -51,12 +51,18 @@ binds the trio of source model, front-matter translator, and markdown extractor:
   `init(email:issueNo:slug:featuredImageFallback:)` builds one from a `ButtondownKit.Email`,
   throwing `ButtondownImportError.malformedArchiveURL` when `absoluteURL` will not parse, and
   substituting `featuredImageFallback` when the email carries no image.
-- `Newsletter.FrontMatter` (`FrontMatter.swift`) — the emitted YAML front matter. The field set
-  mirrors what brightdigit.com's `NewsletterItem` reads (`issueNo`, `title`, `date`,
+- `Newsletter.FrontMatter` (`FrontMatter.swift`) — the **default** emitted YAML front matter. The
+  field set mirrors what brightdigit.com's `NewsletterItem` reads (`issueNo`, `title`, `date`,
   `description`, `featuredImage`, `longArchiveURL`); `buttondownID` is retained for provenance
-  and ignored by the site.
+  and ignored by the site. It has a public memberwise init so consumers can construct one.
 - `Newsletter.FrontMatterTranslator` — maps `Source` → `FrontMatter`, formatting the date with
   `Contribute`'s `YAML.dateFormatter`.
+- `Newsletter+CustomFrontMatter.swift` — a `write(…translatedBy:)` overload taking a translator
+  **instance**, so a consumer can emit any `Encodable` schema instead of `Newsletter.FrontMatter`.
+  It exists because `Contribute.FrontMatterTranslator` requires `init()` and `ContentType`
+  default-constructs the translator, so the typealias path cannot carry per-site configuration.
+  Making the *field set itself* configurable would mean changing `Contribute`'s protocol — a Wave 0
+  package — so it was deliberately not attempted.
 - `Newsletter.MarkdownExtractor` — copies `source.markdown` through verbatim, stripping the
   leading `<!-- buttondown-editor-mode: plaintext -->` marker and the newlines after it.
 - `IssueNumbering.swift` — how an explicit issue number is recognized in a subject. Holds the

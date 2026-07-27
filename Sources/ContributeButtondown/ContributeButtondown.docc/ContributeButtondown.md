@@ -84,6 +84,7 @@ try Newsletter.write(
 - ``Newsletter/FrontMatter``
 - ``Newsletter/FrontMatterTranslator``
 - ``Newsletter/MarkdownExtractor``
+- ``Newsletter/write(from:atContentPathURL:fileNameWithoutExtension:using:translatedBy:options:)``
 
 ### Issue numbering
 

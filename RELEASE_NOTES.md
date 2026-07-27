@@ -17,7 +17,12 @@ reviewable.
   `ButtondownImportError.malformedArchiveURL` when `absoluteURL` cannot be parsed.
 - `Newsletter.FrontMatter` and `Newsletter.FrontMatterTranslator` emit the front-matter
   field set brightdigit.com's newsletter section reads, retaining `buttondownID` for
-  provenance.
+  provenance. That schema is a default, not a contract: `FrontMatter` exposes a public
+  memberwise initializer, and `write(…translatedBy:)` accepts any
+  `Contribute.FrontMatterTranslator` instance, so a site with a different schema supplies
+  its own `Encodable` front matter without reimplementing the importer. Passing an instance
+  (rather than the `ContentType` typealias, which is default-constructed) also lets a
+  translator carry per-site configuration.
 - `Newsletter.MarkdownExtractor` copies Buttondown's plaintext-editor body through
   verbatim, stripping the `<!-- buttondown-editor-mode: plaintext -->` marker.
 - `Newsletter+IssueNumbering` parses explicit issue numbers out of subjects, assigns
