@@ -40,7 +40,7 @@ import Testing
 /// for a site that needs a different one.
 @Suite internal struct CustomFrontMatterTests {
   /// A front matter with none of `Newsletter.FrontMatter`'s field names.
-  private struct CustomFrontMatter: Encodable {
+  internal struct CustomFrontMatter: Encodable {
     internal let headline: String
     internal let publishedAt: String
     internal let tags: [String]
@@ -48,11 +48,11 @@ import Testing
 
   /// Carries configuration (`tags`), which the `ContentType` path cannot do
   /// because it default-constructs its translator.
-  private struct CustomTranslator: Contribute.FrontMatterTranslator {
+  internal struct CustomTranslator: Contribute.FrontMatterTranslator {
     internal typealias SourceType = Newsletter.Source
     internal typealias FrontMatterType = CustomFrontMatter
 
-    private let tags: [String]
+    internal let tags: [String]
 
     internal init() {
       tags = []
@@ -161,7 +161,7 @@ import Testing
 
   /// `FrontMatter` is constructible outside the package, so a consumer can build
   /// one directly (e.g. to wrap or extend it) rather than only receive one.
-  @Test internal func frontMatterIsConstructibleByConsumers() throws {
+  @Test private func frontMatterIsConstructibleByConsumers() throws {
     let image = try #require(URL(string: "https://example.com/cover.png"))
     let archive = try #require(URL(string: "https://example.com/archive/118/"))
 

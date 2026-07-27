@@ -1,5 +1,5 @@
 //
-//  ButtondownImportError.swift
+//  IssueNumberingError.swift
 //  ContributeButtondown
 //
 //  Created by Leo Dion.
@@ -27,11 +27,8 @@
 //  OTHER DEALINGS IN THE SOFTWARE.
 //
 
-/// Errors raised while importing Buttondown newsletters into local Markdown.
-public enum ButtondownImportError: Error, Equatable, Sendable {
-  /// An email's `absolute_url` could not be parsed into a `URL`.
-  case malformedArchiveURL(emailID: String, value: String)
-
-  /// An email's `image` was present but could not be parsed into a `URL`.
-  case malformedFeaturedImageURL(emailID: String, value: String)
+/// Errors raised while configuring issue-number recognition.
+public enum IssueNumberingError: Error, Equatable, Sendable {
+  /// The pattern compiled but has no capture group for the issue number.
+  case missingCaptureGroup(pattern: String)
 }
