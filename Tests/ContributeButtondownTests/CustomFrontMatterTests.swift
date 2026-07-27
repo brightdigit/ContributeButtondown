@@ -41,28 +41,28 @@ import Testing
 @Suite internal struct CustomFrontMatterTests {
   /// A front matter with none of `Newsletter.FrontMatter`'s field names.
   private struct CustomFrontMatter: Encodable {
-    let headline: String
-    let publishedAt: String
-    let tags: [String]
+    internal let headline: String
+    internal let publishedAt: String
+    internal let tags: [String]
   }
 
   /// Carries configuration (`tags`), which the `ContentType` path cannot do
   /// because it default-constructs its translator.
   private struct CustomTranslator: Contribute.FrontMatterTranslator {
-    typealias SourceType = Newsletter.Source
-    typealias FrontMatterType = CustomFrontMatter
+    internal typealias SourceType = Newsletter.Source
+    internal typealias FrontMatterType = CustomFrontMatter
 
     private let tags: [String]
 
-    init() {
+    internal init() {
       tags = []
     }
 
-    init(tags: [String]) {
+    internal init(tags: [String]) {
       self.tags = tags
     }
 
-    func frontMatter(from source: Newsletter.Source) -> CustomFrontMatter {
+    internal func frontMatter(from source: Newsletter.Source) -> CustomFrontMatter {
       CustomFrontMatter(
         headline: source.title,
         publishedAt: YAML.dateFormatter.string(from: source.date),

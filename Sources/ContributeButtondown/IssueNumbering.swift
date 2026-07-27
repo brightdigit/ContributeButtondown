@@ -72,9 +72,14 @@ public struct IssueNumbering: Sendable {
   ///
   /// - Parameter subjectPattern: A pattern whose first capture group captures
   ///   the issue number's digits.
-  /// - Throws: An error if `subjectPattern` is not a valid regular expression.
+  /// - Throws: An error if `subjectPattern` is not a valid regular expression, or
+  ///   if it has no capture group for the issue number.
   public init(subjectPattern: String) throws {
-    regex = try NSRegularExpression(pattern: subjectPattern, options: [])
+    let compiled = try NSRegularExpression(pattern: subjectPattern, options: [])
+    guard compiled.numberOfCaptureGroups >= 1 else {
+      throw IssueNumberingError.missingCaptureGroup(pattern: subjectPattern)
+    }
+    regex = compiled
   }
 
   /// Parses an explicit issue number from an email subject, if present.

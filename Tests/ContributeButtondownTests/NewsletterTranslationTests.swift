@@ -91,6 +91,29 @@ import Testing
     #expect(source.featuredImageURL == Self.fallbackImage)
   }
 
+  /// A non-empty but malformed `image` surfaces as a typed import error rather
+  /// than silently falling back.
+  @Test internal func malformedFeaturedImageURLThrows() {
+    let email = Fixtures.email(
+      subject: "Issue #121",
+      daysAfterEpoch: 103,
+      id: "bad-image",
+      image: "not a url"
+    )
+    #expect(
+      throws: ButtondownImportError.malformedFeaturedImageURL(
+        emailID: "bad-image", value: "not a url"
+      )
+    ) {
+      _ = try Newsletter.Source(
+        email: email,
+        issueNo: 121,
+        slug: "issue-121",
+        featuredImageFallback: Self.fallbackImage
+      )
+    }
+  }
+
   /// A malformed `absolute_url` surfaces as a typed import error rather than a
   /// silent bad URL.
   @Test internal func malformedArchiveURLThrows() {

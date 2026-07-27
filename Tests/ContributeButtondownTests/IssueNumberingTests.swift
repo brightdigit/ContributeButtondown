@@ -97,6 +97,15 @@ import Testing
     }
   }
 
+  /// A pattern with no capture group is rejected at construction time.
+  @Test internal func patternWithoutCaptureGroupThrows() {
+    #expect(
+      throws: IssueNumberingError.missingCaptureGroup(pattern: #"(?i)issue\s*#?\s*\d+"#)
+    ) {
+      _ = try IssueNumbering(subjectPattern: #"(?i)issue\s*#?\s*\d+"#)
+    }
+  }
+
   /// Explicit subject numbers win; unnumbered emails take the next sequential
   /// number continuing from the local max — assigned oldest-first regardless of
   /// input order.

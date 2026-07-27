@@ -85,6 +85,18 @@ extension Newsletter {
   }
 }
 
+private func absoluteHTTPURL(from string: String) -> URL? {
+  guard
+    let url = URL(string: string),
+    let scheme = url.scheme,
+    scheme == "http" || scheme == "https",
+    url.host() != nil
+  else {
+    return nil
+  }
+  return url
+}
+
 extension Newsletter.Source {
   /// Builds a ``Newsletter/Source`` from a Buttondown ``ButtondownKit/Email``.
   ///
@@ -98,7 +110,9 @@ extension Newsletter.Source {
   ///   - slug: The URL-safe slug for the file name.
   ///   - featuredImageFallback: The image URL to use when the email has none.
   /// - Throws: ``ButtondownImportError/malformedArchiveURL`` if `absoluteURL`
-  ///   cannot be parsed into a `URL`.
+  ///   cannot be parsed into a `URL`, or
+  ///   ``ButtondownImportError/malformedFeaturedImageURL`` when `image` is
+  ///   non-empty but cannot be parsed.
   public init(
     email: Email,
     issueNo: Int,
@@ -113,8 +127,12 @@ extension Newsletter.Source {
     let featuredImageURL: URL
     if email.image.isEmpty {
       featuredImageURL = featuredImageFallback
+    } else if let imageURL = absoluteHTTPURL(from: email.image) {
+      featuredImageURL = imageURL
     } else {
-      featuredImageURL = URL(string: email.image) ?? featuredImageFallback
+      throw ButtondownImportError.malformedFeaturedImageURL(
+        emailID: email.id, value: email.image
+      )
     }
     self.init(
       slug: slug,
